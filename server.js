@@ -1,5 +1,6 @@
 const express = require("express")
 const path = require("path")
+const fs = require("fs")
 const axios = require("axios")
 const cheerio = require("cheerio")
 const { execFile } = require("child_process")
@@ -9,6 +10,22 @@ const PORT = process.env.PORT || 3001
 
 app.use(express.json())
 app.use(express.static(path.join(__dirname, "public")))
+
+// Copy cookies to writable /tmp for yt-dlp
+const SRC_COOKIES = path.join(__dirname, "cookies.txt")
+const TMP_COOKIES = "/tmp/cookies.txt"
+try {
+  if (fs.existsSync(SRC_COOKIES)) {
+    const raw = fs.readFileSync(SRC_COOKIES, "utf8")
+    // Strip entries with invalid expires (-1)
+    const clean = raw.split("\n").filter(l => {
+      const parts = l.trim().split("\t")
+      return parts.length < 5 || parts[4] !== "-1"
+    }).join("\n")
+    fs.mkdirSync("/tmp", { recursive: true })
+    fs.writeFileSync(TMP_COOKIES, clean)
+  }
+} catch {} // non-Vercel: keep using SRC_COOKIES
 
 const AGENTS = [
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36",
@@ -21,7 +38,7 @@ function shuffleAgent() { return AGENTS[Math.floor(Math.random() * AGENTS.length
 // ─── yt-dlp binary ────────────────────────────────────────────────────
 
 const BIN = path.join(__dirname, "bin", process.platform === "win32" ? "yt-dlp.exe" : "yt-dlp")
-const COOKIES = path.join(__dirname, "cookies.txt")
+const COOKIES = fs.existsSync(TMP_COOKIES) ? TMP_COOKIES : SRC_COOKIES
 
 function ytdlp(args) {
   return new Promise((resolve, reject) => {
