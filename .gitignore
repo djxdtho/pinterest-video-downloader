@@ -6,5 +6,6 @@ ffprobe.exe
 yt-dlp.exe
 bin/
 .env
+cookies.txt
 
 .vercel

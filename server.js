@@ -21,6 +21,7 @@ function shuffleAgent() { return AGENTS[Math.floor(Math.random() * AGENTS.length
 // ─── yt-dlp binary ────────────────────────────────────────────────────
 
 const BIN = path.join(__dirname, "bin", process.platform === "win32" ? "yt-dlp.exe" : "yt-dlp")
+const COOKIES = path.join(__dirname, "cookies.txt")
 
 function ytdlp(args) {
   return new Promise((resolve, reject) => {
@@ -50,6 +51,7 @@ async function handleYouTube(url, quality) {
       const output = await ytdlp([
         "--dump-json", "--no-warnings",
         "--prefer-free-formats", "--no-check-certificate",
+        "--cookies", COOKIES,
         "--extractor-args", `youtube:player_client=${client}`,
         "--throttled-rate", "100000",
         "--add-header", "Accept-Language:en-US,en;q=0.9",
@@ -193,6 +195,7 @@ app.get("/api/stream", async (req, res) => {
   const proc = execFile(BIN, [
     "--no-warnings",
     "--prefer-free-formats", "--no-check-certificate",
+    "--cookies", COOKIES,
     "--extractor-args", "youtube:player_client=android_creator,ios,android_music",
     "--throttled-rate", "100000",
     "--add-header", "Accept-Language:en-US,en;q=0.9",
