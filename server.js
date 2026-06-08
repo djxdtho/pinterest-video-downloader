@@ -25,7 +25,7 @@ function vidId(url) {
 
 let _yt = null
 async function yt() {
-  if (!_yt) _yt = await Innertube.create({ retrieve_player: false })
+  if (!_yt) _yt = await Innertube.create()
   return _yt
 }
 
