@@ -1,44 +1,14 @@
 const express = require("express")
 const path = require("path")
 const fs = require("fs")
-const os = require("os")
 const axios = require("axios")
 const cheerio = require("cheerio")
-const { execFile } = require("child_process")
 
 const app = express()
 const PORT = process.env.PORT || 3001
 
 app.use(express.json())
 app.use(express.static(path.join(__dirname, "public")))
-
-// ─── yt-dlp setup ─────────────────────────────────────────────────────
-
-const BIN = path.join(__dirname, "bin", process.platform === "win32" ? "yt-dlp.exe" : "yt-dlp")
-
-// Cookies for YouTube — use env var content if provided, else fall back to file
-const COOKIES_TXT = path.join(__dirname, "cookies.txt")
-if (process.env.COOKIES_CONTENT) {
-  fs.writeFileSync(COOKIES_TXT, process.env.COOKIES_CONTENT, "utf8")
-}
-const COOKIES = COOKIES_TXT
-
-// Pre-populate yt-dlp EJS solver cache (standalone binary doesn't bundle lib)
-const XDG_CACHE_HOME = process.env.XDG_CACHE_HOME || path.join(os.homedir(), ".cache")
-const EJS_CACHE_DIR = path.join(XDG_CACHE_HOME, "yt-dlp", "challenge-solver")
-const SRC_EJS_DIR = path.join(__dirname, "ejs")
-try {
-  if (fs.existsSync(SRC_EJS_DIR)) {
-    fs.mkdirSync(EJS_CACHE_DIR, { recursive: true })
-    for (const key of ["core", "lib"]) {
-      const src = path.join(SRC_EJS_DIR, `${key}.json`)
-      const dst = path.join(EJS_CACHE_DIR, `${key}.json`)
-      if (fs.existsSync(src) && !fs.existsSync(dst)) fs.copyFileSync(src, dst)
-    }
-  }
-} catch (e) { console.error("EJS cache setup:", e.message) }
-
-const YTDLP_ENV = { ...process.env, XDG_CACHE_HOME }
 
 const AGENTS = [
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36",
@@ -47,55 +17,6 @@ const AGENTS = [
 ]
 
 function shuffleAgent() { return AGENTS[Math.floor(Math.random() * AGENTS.length)] }
-
-function ytdlp(args) {
-  return new Promise((resolve, reject) => {
-    const proc = execFile(BIN, args, { env: YTDLP_ENV, timeout: 30000, maxBuffer: 10 * 1024 * 1024 }, (err, stdout, stderr) => {
-      if (err) return reject(new Error(stderr.trim() || err.message))
-      try { resolve(JSON.parse(stdout)) } catch { reject(new Error("Parse error: " + stdout.slice(0, 200))) }
-    })
-  })
-}
-
-function formatQuality(quality) {
-  switch (quality) {
-    case "2160p": return "best[height<=2160]"
-    case "1080p": return "best[height<=1080]"
-    default:      return "best[height<=1080]"
-  }
-}
-
-// ─── YouTube ──────────────────────────────────────────────────────────
-
-async function handleYouTube(url, quality) {
-  const fmt = formatQuality(quality)
-  const output = await ytdlp([
-    "--dump-json", "--no-warnings",
-    "--prefer-free-formats", "--no-check-certificate",
-    "--js-runtimes", "node:node",
-    "--cookies", COOKIES,
-    "--sleep-requests", "0.5",
-    "--add-header", "Accept-Language:en-US,en;q=0.9",
-    "--format", fmt,
-    "--user-agent", shuffleAgent(),
-    url,
-  ])
-  const title = output.title || "YouTube Video"
-  const playbackFormat = output.requested_formats
-    ? output.requested_formats.find((f) => f.vcodec !== "none") || output
-    : output
-  const qlabel = playbackFormat?.height
-    ? `${playbackFormat.height}p`
-    : (output.height ? `${output.height}p` : (quality || "1080p"))
-  return {
-    title,
-    source: "youtube",
-    qualityLabel: qlabel,
-    width: playbackFormat?.width || output.width || null,
-    height: playbackFormat?.height || output.height || null,
-    hasAudio: true,
-  }
-}
 
 // ─── Pinterest ────────────────────────────────────────────────────────
 
@@ -171,75 +92,22 @@ async function handlePinterest(url) {
   return { videoUrl, title: extractTitle(html), source: "pinterest" }
 }
 
-// ─── URL detection ────────────────────────────────────────────────────
-
-function detectSource(url) {
-  if (/youtube\.com|youtu\.be/.test(url)) return "youtube"
-  if (/pinterest\.com|pin\.it/.test(url)) return "pinterest"
-  return null
-}
-
 // ─── Routes ───────────────────────────────────────────────────────────
 
 app.post("/api/extract", async (req, res) => {
-  const { url, quality } = req.body
+  const { url } = req.body
   if (!url) return res.status(400).json({ error: "Please enter a URL" })
 
-  const source = detectSource(url)
-  if (!source) return res.status(400).json({ error: "Unsupported link.", source: null })
+  if (!/pinterest\.(com|[a-z]{2}|co\.[a-z]{2})|pin\.it/.test(url))
+    return res.status(400).json({ error: "Please enter a valid Pinterest link.", source: null })
 
   try {
-    if (source === "youtube") return res.json(await handleYouTube(url, quality))
-    if (source === "pinterest") return res.json(await handlePinterest(url))
+    return res.json(await handlePinterest(url))
   } catch (err) {
-    const msg = err.message || ""
-    if (msg.includes("Video unavailable") || msg.includes("Private video"))
-      return res.status(403).json({ error: "This video is private or unavailable." })
-    return res.status(500).json({ error: msg || "Something went wrong." })
+    return res.status(500).json({ error: err.message || "Something went wrong." })
   }
 })
 
-// Stream YouTube video via yt-dlp
-app.get("/api/stream", async (req, res) => {
-  const { url, quality, title } = req.query
-  if (!url) return res.status(400).json({ error: "Missing url" })
-
-  const fmt = formatQuality(quality)
-  const fname = (title || "video").replace(/[^a-zA-Z0-9-_]/g, "_").slice(0, 50)
-
-  res.setHeader("Content-Type", "video/mp4")
-  res.setHeader("Content-Disposition", `attachment; filename="${fname}.mp4"`)
-  res.setHeader("Accept-Ranges", "bytes")
-
-  const proc = execFile(BIN, [
-    "--no-warnings",
-    "--prefer-free-formats", "--no-check-certificate",
-    "--js-runtimes", "node:node",
-    "--cookies", COOKIES,
-    "--sleep-requests", "0.5",
-    "--add-header", "Accept-Language:en-US,en;q=0.9",
-    "--format", fmt,
-    "--user-agent", shuffleAgent(),
-    "-o", "-",
-    url,
-  ], { env: YTDLP_ENV, timeout: 60000 })
-
-  let stderr = ""
-  proc.stderr.on("data", (d) => { stderr += d })
-  proc.stdout.pipe(res)
-
-  proc.on("close", (code) => {
-    if (code !== 0 && !res.headersSent) {
-      res.status(500).json({ error: stderr || `yt-dlp exited ${code}` })
-    }
-  })
-  proc.on("error", (err) => {
-    if (!res.headersSent) res.status(500).json({ error: err.message })
-  })
-  req.on("close", () => { proc.kill() })
-})
-
-// Proxy Pinterest videos through server
 app.get("/api/proxy", async (req, res) => {
   const { url: target, title } = req.query
   if (!target) return res.status(400).json({ error: "Missing url" })

@@ -64,41 +64,6 @@ body {
   line-height: 1.5;
 }
 
-/* ─── Source Tabs ────────────────────────────── */
-
-.source-tabs {
-  display: flex;
-  gap: 6px;
-  margin-bottom: 16px;
-}
-
-.source-tab {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  background: rgba(255, 255, 255, 0.03);
-  color: rgba(255, 255, 255, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 8px;
-  padding: 6px 12px;
-  font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-  font-family: inherit;
-}
-
-.source-tab:hover {
-  background: rgba(255, 255, 255, 0.06);
-  color: #fff;
-}
-
-.source-tab.active {
-  background: rgba(230, 0, 35, 0.12);
-  border-color: rgba(230, 0, 35, 0.3);
-  color: #e60023;
-}
-
 /* ─── Input ──────────────────────────────────── */
 
 .input-group {
@@ -159,58 +124,6 @@ body {
 .paste-btn:hover {
   color: #fff;
   background: rgba(255, 255, 255, 0.06);
-}
-
-/* ─── Quality Picker ─────────────────────────── */
-
-.quality-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 2px 0;
-  animation: fadeUp 0.2s ease-out;
-}
-
-.quality-row.hidden {
-  display: none;
-}
-
-.quality-label {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.3);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.6px;
-}
-
-.quality-options {
-  display: flex;
-  gap: 4px;
-}
-
-.quality-btn {
-  background: rgba(255, 255, 255, 0.04);
-  color: rgba(255, 255, 255, 0.45);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
-  padding: 6px 14px;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-  font-family: inherit;
-  position: relative;
-}
-
-.quality-btn:hover {
-  background: rgba(255, 255, 255, 0.08);
-  color: #fff;
-}
-
-.quality-btn.active {
-  background: rgba(230, 0, 35, 0.12);
-  border-color: rgba(230, 0, 35, 0.4);
-  color: #e60023;
 }
 
 /* ─── Download Button ────────────────────────── */
@@ -300,34 +213,15 @@ body {
   flex-wrap: wrap;
 }
 
-.meta-source,
-.meta-quality,
-.meta-resolution {
+.meta-source {
   font-size: 11px;
   font-weight: 500;
   padding: 3px 8px;
   border-radius: 6px;
-}
-
-.meta-source {
-  background: rgba(255, 255, 255, 0.05);
-  color: rgba(255, 255, 255, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-.meta-source.youtube { color: #ff4444; border-color: rgba(255, 68, 68, 0.25); background: rgba(255, 68, 68, 0.08); }
-.meta-source.pinterest { color: #e60023; border-color: rgba(230, 0, 35, 0.25); background: rgba(230, 0, 35, 0.08); }
-
-.meta-quality {
-  background: rgba(230, 0, 35, 0.1);
   color: #e60023;
-  border: 1px solid rgba(230, 0, 35, 0.2);
-}
-
-.meta-resolution {
-  background: rgba(255, 255, 255, 0.05);
-  color: rgba(255, 255, 255, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-color: rgba(230, 0, 35, 0.25);
+  background: rgba(230, 0, 35, 0.08);
+  border: 1px solid;
 }
 
 /* ─── Result ──────────────────────────────────── */
@@ -410,17 +304,6 @@ body {
   transform: scale(0.97);
 }
 
-.save-audio-btn {
-  background: rgba(255, 255, 255, 0.04);
-  border-color: rgba(255, 255, 255, 0.06);
-  color: rgba(255, 255, 255, 0.5);
-}
-
-.save-audio-btn:hover {
-  background: rgba(255, 255, 255, 0.08);
-  color: #fff;
-}
-
 /* ─── Placeholder ─────────────────────────────── */
 
 .placeholder {
@@ -456,6 +339,4 @@ body {
   .result-actions { justify-content: stretch; }
   .save-btn { flex: 1; justify-content: center; }
   .video-title { white-space: normal; }
-  .source-tabs { overflow-x: auto; }
-  .source-tab { flex-shrink: 0; }
 }
