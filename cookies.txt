@@ -1,0 +1,47 @@
+# Netscape HTTP Cookie File
+# https://curl.haxx.se/docs/http-cookies.html
+
+.opencode.ai	TRUE	/	FALSE	1811255529	oc_locale	en
+.github.com	TRUE	/	TRUE	1811255546	_octo	GH1.1.313299005.1779719541
+.github.com	TRUE	/	TRUE	1811255546	logged_in	no
+.antigravity.google	TRUE	/	FALSE	1814557727	_ga	GA1.1.1114973774.1779997728
+.antigravity.google	TRUE	/	FALSE	1814557930	_ga_47V54ZJ3EV	GS2.1.s1779997727
+.instagram.com	TRUE	/	TRUE	1812402822	ig_did	68E5F44B-70A6-4D36-BC89-25A9B78CC695
+.instagram.com	TRUE	/	TRUE	1815427648	csrftoken	5sA2E4OUHAVBW76Y2PKB9p
+.instagram.com	TRUE	/	TRUE	1815426822	datr	Bt8lav2U0k92GQXOd399zcJC
+.instagram.com	TRUE	/	TRUE	1815426822	mid	aiXfBgALAAErjQ1Xz6lKV7jgX-uh
+.instagram.com	TRUE	/	TRUE	1781472447	wd	1536x776
+.instagram.com	TRUE	/	TRUE	1781472460	dpr	1.25
+.tiktok.com	TRUE	/	TRUE	1796419606	tt_chain_token	x0GEcuMwiQ/iIJypCSIXow==
+.www.tiktok.com	TRUE	/	TRUE	1806787607	tiktok_webapp_theme_source	auto
+.www.tiktok.com	TRUE	/	TRUE	1806787607	tiktok_webapp_theme	dark
+.tiktok.com	TRUE	/	TRUE	1812403608	ttwid	1%7CNZorBjZY1LEpIIh-xlfIWpck4gG9VBF48xG5Hii3m-g%7C1780867608%7C6e070e324731ab5d83a2fd79ebd884149a5652019685a0a7b7c87f7cd4d5767b
+.www.tiktok.com	TRUE	/	FALSE	1788643614	msToken	-fiua1wjGOaehOZvHJ082itW1Q2wD9QyvfjZ7d-1u5knpLXVA2ZfL57WevzUqnRBxQaw_xBg4L-Jcpeeg97I3hGqC4r_IghUru6V1ZHzqy16tZp6Ckw5jfK-sg56R3YczcikLkZHdGYXkA==
+.www.tiktok.com	TRUE	/	TRUE	1806787615	delay_guest_mode_vid	5
+.www.tiktok.com	TRUE	/	FALSE	1796419623	g_state	{"i_l":0,"i_ll":1780867623076,"i_b":"g4rsv+VnAVi3lLS1cIX/1MwzgWnTyFS5hCK5DkNph7g","i_e":{"enable_itp_optimization":0},"i_et":1780867623064}
+.tiktok.com	TRUE	/	TRUE	1781731629	msToken	oFYjpLhX1OhDfxdUHTBvivir_lJBIF-WtR1meLXUiCOwSnVIf8DcWww4dGxVin-VxU3VLOhAoByGysIsEdt-kWEjeXPQ-PoEbaJjEt3X5goNphhj0kamR8ozseSaG81GmywkbRT7vJGv0Q==
+.tiktok.com	TRUE	/	TRUE	1814563634	cookie-consent	{%22optional%22:true%2C%22ga%22:true%2C%22af%22:true%2C%22fbp%22:true%2C%22lip%22:true%2C%22bing%22:true%2C%22ttads%22:true%2C%22reddit%22:true%2C%22hubspot%22:true%2C%22version%22:%22v10%22}
+.instagram.com	TRUE	/	TRUE	1812403647	ig_nrcb	1
+.google.com	TRUE	/	TRUE	1796419944	AEC	AaJma5s1u5_JNtn5Nq3uOGfOhrD3tfKSr8wIgSPxBJc4seLDFLWj1s2N_w
+.google.com	TRUE	/	TRUE	1814995951	SOCS	CAESHAgCEhJnd3NfMjAyNjA2MDQtMF9SQzEaAmVuIAEaBgiA6ZLRBg
+.google.com	TRUE	/	TRUE	1815054649	__Secure-ENID	34.SE=FR5cCh1lA8OhLxrSrwdj5nzxgnNgpqG_LkQRK84rUs1bZ9hxwW3i0rXDOEEQKG0udyhoBIdiTkWjI2Bk2Q7UvI5Ape20yKTzBTcf16sAQA0uZ8B8Lb1p9WgIOBnaKt3cRw6o56VGK05ffKcmqsSXJQqmaLCbDtG4bHIGAhTxuhtF9mqTm1SCzsUpLahKV7e7PKFG7kQccNpFOztgiplWGK2koEdMDBoyrjRmNRJ9zQtvJb-l7NQYqXwrrvpYBgTqGoc
+.google.com.ng	TRUE	/	TRUE	1796735686	NID	532=Rr60AGMxRc9-ZtTYk9ZKTLnYVPNgQr4CrgNi_k9OWfvWSVmXfeyLUDJetLPqZuCOYpUDWc9Y6bYx0bXfx-evNhzqg3mXhEgT97r4H-4uY7K4ImwaUupBvz8wpwR3OVP6ZJ3-86LoWjpMoO7b1FE3f1vY_JoR5YXhbaE18BLO_DhinD4ttVKjjgxSFeMmWhAAFtbW3w
+.youtube.com	TRUE	/	TRUE	1815072825	VISITOR_PRIVACY_METADATA	CgJORxIEGgAgPQ%3D%3D
+.youtube.com	TRUE	/	TRUE	1796476486	__Secure-ROLLOUT_TOKEN	COD1t768pIiX9QEQr9ej29z3lAMYr9ej29z3lAM%3D
+.youtube.com	TRUE	/	TRUE	1815052490	SOCS	CAESEwgDEgk5MjY0MTExMjMaAmVuIAEaBgiAjJjRBg
+.google.com	TRUE	/	TRUE	1796735678	NID	532=HYnmAi0Okqy_wIzo2kJXM7IXZY43FdDUnH3vMzCD9MtKF3NZxstfneSBmJb55A-ymOmPPJObemb8UeBr9AUgOZaGTtqhdxxuJWnpiNFhk6iXDo2RenwI2D9N65q6Z2GIfIA3O8DyH37e7r3VWxajQtEieJQKd7e9nRilp3xJJRHuFFJzZ9WNocQBN_0yLn_QfXXRkY_m_ikMMQk_nvAGOQ
+.vercel.com	TRUE	/	FALSE	1781029464	visitor-id	hvw0ij5wUGTygvGd_WwPj
+.vercel.com	TRUE	/	TRUE	1788719064	_v-anonymous-id	VYngj8zBTwwNgFXlLsxS1
+.vercel.com	TRUE	/	TRUE	1781029464	_v-anonymous-id-renewed	1
+.vercel.com	TRUE	/	TRUE	1812479064	_v-consent	%7B%22essential%22%3Atrue%2C%22analytics%22%3Atrue%2C%22marketing%22%3Atrue%2C%22functional%22%3Atrue%2C%22version%22%3A1%7D
+.vercel.com	TRUE	/	TRUE	1812479354	rl_anonymous_id	RS_ENC_v3_IlZZbmdqOHpCVHd3TmdGWGxMc3hTMSI%3D
+.vercel.com	TRUE	/	TRUE	1812479354	rl_page_init_referrer	RS_ENC_v3_IiRkaXJlY3Qi
+.vercel.com	TRUE	/	FALSE	-1	vercel_session_id	Mzg2ODAyMDEyOSwzOTE0MDI2Njk2LDI3MDE5ODI1ODcsMTEyNzYzNzAyOCwzOTU0NTYxNzMz
+.vercel.com	TRUE	/	FALSE	1796495353	g_state	{"i_l":0,"i_ll":1780943353713,"i_b":"3uV3cMVuNzCGXiE+Kkya1oL6jrZmsILGSLnl1IqW0OA","i_e":{"enable_itp_optimization":0},"i_et":1780943353707}
+.vercel.com	TRUE	/	FALSE	1815503353	__ssid	ee8f9649-c2e4-4b8d-b3eb-6b7c93011fa7
+.vercel.com	TRUE	/	TRUE	1812479354	rl_session	RS_ENC_v3_eyJhdXRvVHJhY2siOnRydWUsInRpbWVvdXQiOjE4MDAwMDAsImV4cGlyZXNBdCI6MTc4MDk0NTE1NDI0OSwiaWQiOjE3ODA5NDMwNjgzNTR9
+.vercel.com	TRUE	/	TRUE	-1	_v-session	{%22id%22:%220d62d293-59e9-494b-9567-fddd48ae1929%22%2C%22landing_page%22:%22https://vercel.com/login?next=%252Fdjxdthos-projects%252Fpinterest-video-downloader%252FAxAVkB6GoQAY9fDRkic7hceT4Gqk%252Flogs%22%2C%22referrer%22:%22%22%2C%22version%22:1}
+.youtube.com	TRUE	/	TRUE	-1	YSC	CPT0IBvhrlA
+.youtube.com	TRUE	/	TRUE	1815504827	PREF	f4=4000000&tz=Africa.Lagos
+.youtube.com	TRUE	/	TRUE	1815052489	__Secure-YENID	16.YTE=OEDpb7CzYT1VugiKe2D3Ai8TTYmyjxok7yiqOwmb2VAJzuuUrCspudC2puutsGH-MraJIrrmCjwcWArOAvgshND_XXYdI9j9vIt-dTbQO-NwAgM6TO3gVGme9Kqmgz33K4TungASRbM0lGRJSHWXUBNtJn4bnFZ0tbryWlZX0ZasGGE1vgpOMRttHZeVZpO3e5KKnjyClMp5kezGT_HvzQ7N7dq511LV1cWf0NaYU3B_ass95TFwXmKgJwMO_TcnYyo_g8oQvHbGY04n4ZaJevLfu47pacwh7E0gY9UxuzmCFkSZMgD2ImAsScH68D66mw8gHVH1XltZIFMGwWFZxA
+.youtube.com	TRUE	/	TRUE	1815052488	__Secure-YEC	CgtpcmFLSzJOcjNOWSi5n5zRBjIKCgJORxIEGgAgPWLgAgrdAjE2LllURT1PRURwYjdDellUMVZ1Z2lLZTJEM0FpOFRUWW15anhvazd5aXFPd21iMlZBSnp1dVVyQ3NwdWRDMnB1dXRzR0gtTXJhSklycm1DandjV0FyT0F2Z3NoTkRfWFhZZEk5ajl2SXQtZFRiUU8tTndBZ002VE8zZ1ZHbWU5S3FtZ3ozM0s0VHVuZ0FTUmJNMGxHUkpTSFdYVUJOdEpuNGJuRlowdGJyeVdsWlgwWmFzR0dFMXZncE9NUnR0SFplVlpwTzNlNUtLbmp5Q2xNcDVrZXpHVF9IdnpRN043ZHE1MTFMVjFjV2YwTmFZVTNCX2Fzczk1VEZ3WG1LZ0p3TU9fVGNuWXlvX2c4b1F2SGJHWTA0bjRaYUpldkxmdTQ3cGFjd2g3RTBnWTlVeHV6bUNGa1NaTWdEMkltQXNTY0g2OEQ2Nm13OGdIVkgxWGx0WklGTUd3V0ZaeEE=
