@@ -2,10 +2,10 @@ const express = require("express")
 const path = require("path")
 const axios = require("axios")
 const cheerio = require("cheerio")
-const { spawn } = require("child_process")
+const youtubedl = require("youtube-dl-exec")
 
 const app = express()
-const PORT = 3001
+const PORT = process.env.PORT || 3001
 
 app.use(express.json())
 app.use(express.static(path.join(__dirname, "public")))
@@ -18,27 +18,8 @@ const AGENTS = [
 
 function shuffleAgent() { return AGENTS[Math.floor(Math.random() * AGENTS.length)] }
 
-// ─── yt-dlp helper ───────────────────────────────────────────────────
+// ─── yt-dlp helper (via youtube-dl-exec — no Python needed) ──────────
 
-function ytdlp(...args) {
-  return new Promise((resolve, reject) => {
-    const proc = spawn("python", ["-m", "yt_dlp", ...args], { windowsHide: true })
-    let stdout = "", stderr = ""
-    proc.stdout.on("data", (d) => { stdout += d })
-    proc.stderr.on("data", (d) => { stderr += d })
-    proc.on("error", reject)
-    proc.on("close", (code) => {
-      if (code === 0) {
-        try { resolve(JSON.parse(stdout)) }
-        catch { reject(new Error("Parse error: " + stdout.slice(0, 200))) }
-      } else {
-        reject(new Error(stderr.trim() || `yt-dlp exited ${code}`))
-      }
-    })
-  })
-}
-
-// No ffmpeg available, use single streams that include audio
 function formatQuality(quality) {
   switch (quality) {
     case "2160p": return "best[height<=2160]"
@@ -51,13 +32,15 @@ function formatQuality(quality) {
 
 async function handleYouTube(url, quality) {
   const fmt = formatQuality(quality)
-  const output = await ytdlp(
-    "--dump-json", "--no-warnings", "--no-call-home",
-    "--prefer-free-formats", "--no-check-certificate",
-    "--format", fmt,
-    "--user-agent", shuffleAgent(),
-    url,
-  )
+  const output = await youtubedl(url, {
+    dumpSingleJson: true,
+    noWarnings: true,
+    noCallHome: true,
+    preferFreeFormats: true,
+    noCheckCertificates: true,
+    format: fmt,
+    userAgent: shuffleAgent(),
+  })
 
   const title = output.title || "YouTube Video"
   const formats = output.requested_formats || []
@@ -175,7 +158,7 @@ app.post("/api/extract", async (req, res) => {
   }
 })
 
-// Stream YouTube video with audio merged using yt-dlp
+// Stream YouTube video using youtube-dl-exec
 app.get("/api/stream", async (req, res) => {
   const { url, quality, title } = req.query
   if (!url) return res.status(400).json({ error: "Missing url" })
@@ -187,16 +170,16 @@ app.get("/api/stream", async (req, res) => {
   res.setHeader("Content-Disposition", `attachment; filename="${fname}.mp4"`)
   res.setHeader("Accept-Ranges", "bytes")
 
-  const proc = spawn("python", [
-    "-m", "yt_dlp",
-    "--no-warnings", "--no-call-home",
-    "--prefer-free-formats", "--no-check-certificate",
-    "--format", fmt,
-    "--merge-output-format", "mp4",
-    "--user-agent", shuffleAgent(),
-    "-o", "-",
-    url,
-  ], { windowsHide: true })
+  const proc = youtubedl.exec(url, {
+    noWarnings: true,
+    noCallHome: true,
+    preferFreeFormats: true,
+    noCheckCertificates: true,
+    format: fmt,
+    mergeOutputFormat: "mp4",
+    userAgent: shuffleAgent(),
+    output: "-",
+  })
 
   let stderr = ""
   proc.stderr.on("data", (d) => { stderr += d })
@@ -246,6 +229,10 @@ app.get("/api/proxy", async (req, res) => {
   }
 })
 
-app.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`)
-})
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Server running at http://localhost:${PORT}`)
+  })
+}
+
+module.exports = app
