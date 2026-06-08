@@ -44,8 +44,11 @@ function formatQuality(quality) {
 async function handleYouTube(url, quality) {
   const fmt = formatQuality(quality)
   const output = await ytdlp([
-    "--dump-json", "--no-warnings", "--no-call-home",
+    "--dump-json", "--no-warnings",
     "--prefer-free-formats", "--no-check-certificate",
+    "--extractor-args", "youtube:player_client=android",
+    "--add-header", "Accept-Language:en-US,en;q=0.9",
+    "--add-header", "Origin:https://www.youtube.com",
     "--format", fmt,
     "--user-agent", shuffleAgent(),
     url,
@@ -180,8 +183,11 @@ app.get("/api/stream", async (req, res) => {
   res.setHeader("Accept-Ranges", "bytes")
 
   const proc = execFile(BIN, [
-    "--no-warnings", "--no-call-home",
+    "--no-warnings",
     "--prefer-free-formats", "--no-check-certificate",
+    "--extractor-args", "youtube:player_client=android",
+    "--add-header", "Accept-Language:en-US,en;q=0.9",
+    "--add-header", "Origin:https://www.youtube.com",
     "--format", fmt,
     "--user-agent", shuffleAgent(),
     "-o", "-",
