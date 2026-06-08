@@ -61,38 +61,30 @@ function formatQuality(quality) {
 
 async function handleYouTube(url, quality) {
   const fmt = formatQuality(quality)
-  const clients = ["android_creator,ios,android_music", "android", "web_safari"]
-  let lastErr
-  for (const client of clients) {
-    try {
-      const output = await ytdlp([
-        "--dump-json", "--no-warnings",
-        "--prefer-free-formats", "--no-check-certificate",
-        "--cookies", COOKIES,
-        "--extractor-args", `youtube:player_client=${client}`,
-        "--throttled-rate", "100000",
-        "--add-header", "Accept-Language:en-US,en;q=0.9",
-        "--add-header", "Origin:https://www.youtube.com",
-        "--format", fmt,
-        "--user-agent", shuffleAgent(),
-        url,
-      ])
-      const title = output.title || "YouTube Video"
-      const formats = output.requested_formats || []
-      const videoStream = formats.find((f) => f.vcodec !== "none") || output
-      return {
-        title,
-        source: "youtube",
-        qualityLabel: videoStream?.height ? `${videoStream.height}p` : (quality || "1080p"),
-        width: videoStream?.width || null,
-        height: videoStream?.height || null,
-        hasAudio: true,
-      }
-    } catch (e) {
-      lastErr = e
-    }
+  const output = await ytdlp([
+    "--dump-json", "--no-warnings",
+    "--prefer-free-formats", "--no-check-certificate",
+    "--cookies", COOKIES,
+    "--extractor-args", "youtube:player_client=android_creator,android_music,ios",
+    "--extractor-args", "youtube:player_skip=webpage,configs",
+    "--sleep-requests", "0.5",
+    "--add-header", "Accept-Language:en-US,en;q=0.9",
+    "--add-header", "Origin:https://www.youtube.com",
+    "--format", fmt,
+    "--user-agent", shuffleAgent(),
+    url,
+  ])
+  const title = output.title || "YouTube Video"
+  const formats = output.requested_formats || []
+  const videoStream = formats.find((f) => f.vcodec !== "none") || output
+  return {
+    title,
+    source: "youtube",
+    qualityLabel: videoStream?.height ? `${videoStream.height}p` : (quality || "1080p"),
+    width: videoStream?.width || null,
+    height: videoStream?.height || null,
+    hasAudio: true,
   }
-  throw lastErr
 }
 
 // ─── Pinterest ────────────────────────────────────────────────────────
@@ -213,8 +205,9 @@ app.get("/api/stream", async (req, res) => {
     "--no-warnings",
     "--prefer-free-formats", "--no-check-certificate",
     "--cookies", COOKIES,
-    "--extractor-args", "youtube:player_client=android_creator,ios,android_music",
-    "--throttled-rate", "100000",
+    "--extractor-args", "youtube:player_client=android_creator,android_music,ios",
+    "--extractor-args", "youtube:player_skip=webpage,configs",
+    "--sleep-requests", "0.5",
     "--add-header", "Accept-Language:en-US,en;q=0.9",
     "--add-header", "Origin:https://www.youtube.com",
     "--format", fmt,
