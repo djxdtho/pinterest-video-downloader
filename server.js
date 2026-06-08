@@ -1,6 +1,7 @@
 const express = require("express")
 const path = require("path")
 const fs = require("fs")
+const os = require("os")
 const axios = require("axios")
 const cheerio = require("cheerio")
 const { execFile } = require("child_process")
@@ -11,21 +12,33 @@ const PORT = process.env.PORT || 3001
 app.use(express.json())
 app.use(express.static(path.join(__dirname, "public")))
 
-// Copy cookies to writable /tmp for yt-dlp
-const SRC_COOKIES = path.join(__dirname, "cookies.txt")
-const TMP_COOKIES = "/tmp/cookies.txt"
+// ─── yt-dlp setup ─────────────────────────────────────────────────────
+
+const BIN = path.join(__dirname, "bin", process.platform === "win32" ? "yt-dlp.exe" : "yt-dlp")
+
+// Cookies for YouTube — use env var content if provided, else fall back to file
+const COOKIES_TXT = path.join(__dirname, "cookies.txt")
+if (process.env.COOKIES_CONTENT) {
+  fs.writeFileSync(COOKIES_TXT, process.env.COOKIES_CONTENT, "utf8")
+}
+const COOKIES = COOKIES_TXT
+
+// Pre-populate yt-dlp EJS solver cache (standalone binary doesn't bundle lib)
+const XDG_CACHE_HOME = process.env.XDG_CACHE_HOME || path.join(os.homedir(), ".cache")
+const EJS_CACHE_DIR = path.join(XDG_CACHE_HOME, "yt-dlp", "challenge-solver")
+const SRC_EJS_DIR = path.join(__dirname, "ejs")
 try {
-  if (fs.existsSync(SRC_COOKIES)) {
-    const raw = fs.readFileSync(SRC_COOKIES, "utf8")
-    // Strip entries with invalid expires (-1)
-    const clean = raw.split("\n").filter(l => {
-      const parts = l.trim().split("\t")
-      return parts.length < 5 || parts[4] !== "-1"
-    }).join("\n")
-    fs.mkdirSync("/tmp", { recursive: true })
-    fs.writeFileSync(TMP_COOKIES, clean)
+  if (fs.existsSync(SRC_EJS_DIR)) {
+    fs.mkdirSync(EJS_CACHE_DIR, { recursive: true })
+    for (const key of ["core", "lib"]) {
+      const src = path.join(SRC_EJS_DIR, `${key}.json`)
+      const dst = path.join(EJS_CACHE_DIR, `${key}.json`)
+      if (fs.existsSync(src) && !fs.existsSync(dst)) fs.copyFileSync(src, dst)
+    }
   }
-} catch {} // non-Vercel: keep using SRC_COOKIES
+} catch (e) { console.error("EJS cache setup:", e.message) }
+
+const YTDLP_ENV = { ...process.env, XDG_CACHE_HOME }
 
 const AGENTS = [
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36",
@@ -35,14 +48,9 @@ const AGENTS = [
 
 function shuffleAgent() { return AGENTS[Math.floor(Math.random() * AGENTS.length)] }
 
-// ─── yt-dlp binary ────────────────────────────────────────────────────
-
-const BIN = path.join(__dirname, "bin", process.platform === "win32" ? "yt-dlp.exe" : "yt-dlp")
-const COOKIES = fs.existsSync(TMP_COOKIES) ? TMP_COOKIES : SRC_COOKIES
-
 function ytdlp(args) {
   return new Promise((resolve, reject) => {
-    const proc = execFile(BIN, args, { timeout: 30000, maxBuffer: 10 * 1024 * 1024 }, (err, stdout, stderr) => {
+    const proc = execFile(BIN, args, { env: YTDLP_ENV, timeout: 30000, maxBuffer: 10 * 1024 * 1024 }, (err, stdout, stderr) => {
       if (err) return reject(new Error(stderr.trim() || err.message))
       try { resolve(JSON.parse(stdout)) } catch { reject(new Error("Parse error: " + stdout.slice(0, 200))) }
     })
@@ -64,10 +72,8 @@ async function handleYouTube(url, quality) {
   const output = await ytdlp([
     "--dump-json", "--no-warnings",
     "--prefer-free-formats", "--no-check-certificate",
-    "--remote-components", "ejs:github",
     "--js-runtimes", "node:node",
     "--cookies", COOKIES,
-    "--extractor-args", "youtube:player_client=web_safari",
     "--sleep-requests", "0.5",
     "--add-header", "Accept-Language:en-US,en;q=0.9",
     "--format", fmt,
@@ -208,17 +214,15 @@ app.get("/api/stream", async (req, res) => {
   const proc = execFile(BIN, [
     "--no-warnings",
     "--prefer-free-formats", "--no-check-certificate",
-    "--remote-components", "ejs:github",
     "--js-runtimes", "node:node",
     "--cookies", COOKIES,
-    "--extractor-args", "youtube:player_client=web_safari",
     "--sleep-requests", "0.5",
     "--add-header", "Accept-Language:en-US,en;q=0.9",
     "--format", fmt,
     "--user-agent", shuffleAgent(),
     "-o", "-",
     url,
-  ], { timeout: 60000 })
+  ], { env: YTDLP_ENV, timeout: 60000 })
 
   let stderr = ""
   proc.stderr.on("data", (d) => { stderr += d })
