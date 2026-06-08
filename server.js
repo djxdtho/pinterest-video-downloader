@@ -64,25 +64,29 @@ async function handleYouTube(url, quality) {
   const output = await ytdlp([
     "--dump-json", "--no-warnings",
     "--prefer-free-formats", "--no-check-certificate",
+    "--remote-components", "ejs:github",
+    "--js-runtimes", "node:node",
     "--cookies", COOKIES,
-    "--extractor-args", "youtube:player_client=android_creator,android_music,ios",
-    "--extractor-args", "youtube:player_skip=webpage,configs",
+    "--extractor-args", "youtube:player_client=web_safari",
     "--sleep-requests", "0.5",
     "--add-header", "Accept-Language:en-US,en;q=0.9",
-    "--add-header", "Origin:https://www.youtube.com",
     "--format", fmt,
     "--user-agent", shuffleAgent(),
     url,
   ])
   const title = output.title || "YouTube Video"
-  const formats = output.requested_formats || []
-  const videoStream = formats.find((f) => f.vcodec !== "none") || output
+  const playbackFormat = output.requested_formats
+    ? output.requested_formats.find((f) => f.vcodec !== "none") || output
+    : output
+  const qlabel = playbackFormat?.height
+    ? `${playbackFormat.height}p`
+    : (output.height ? `${output.height}p` : (quality || "1080p"))
   return {
     title,
     source: "youtube",
-    qualityLabel: videoStream?.height ? `${videoStream.height}p` : (quality || "1080p"),
-    width: videoStream?.width || null,
-    height: videoStream?.height || null,
+    qualityLabel: qlabel,
+    width: playbackFormat?.width || output.width || null,
+    height: playbackFormat?.height || output.height || null,
     hasAudio: true,
   }
 }
@@ -204,12 +208,12 @@ app.get("/api/stream", async (req, res) => {
   const proc = execFile(BIN, [
     "--no-warnings",
     "--prefer-free-formats", "--no-check-certificate",
+    "--remote-components", "ejs:github",
+    "--js-runtimes", "node:node",
     "--cookies", COOKIES,
-    "--extractor-args", "youtube:player_client=android_creator,android_music,ios",
-    "--extractor-args", "youtube:player_skip=webpage,configs",
+    "--extractor-args", "youtube:player_client=web_safari",
     "--sleep-requests", "0.5",
     "--add-header", "Accept-Language:en-US,en;q=0.9",
-    "--add-header", "Origin:https://www.youtube.com",
     "--format", fmt,
     "--user-agent", shuffleAgent(),
     "-o", "-",
