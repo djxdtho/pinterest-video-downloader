@@ -2,7 +2,7 @@ const express = require("express")
 const path = require("path")
 const axios = require("axios")
 const cheerio = require("cheerio")
-const { Innertube } = require("youtubei.js")
+const { execFile } = require("child_process")
 
 const app = express()
 const PORT = process.env.PORT || 3001
@@ -18,39 +18,49 @@ const AGENTS = [
 
 function shuffleAgent() { return AGENTS[Math.floor(Math.random() * AGENTS.length)] }
 
-function vidId(url) {
-  const m = url.match(/(?:v=|youtu\.be\/|shorts\/)([a-zA-Z0-9_-]{11})/)
-  return m ? m[1] : null
+// ─── yt-dlp binary ────────────────────────────────────────────────────
+
+const BIN = path.join(__dirname, "bin", process.platform === "win32" ? "yt-dlp.exe" : "yt-dlp")
+
+function ytdlp(args) {
+  return new Promise((resolve, reject) => {
+    const proc = execFile(BIN, args, { timeout: 30000, maxBuffer: 10 * 1024 * 1024 }, (err, stdout, stderr) => {
+      if (err) return reject(new Error(stderr.trim() || err.message))
+      try { resolve(JSON.parse(stdout)) } catch { reject(new Error("Parse error: " + stdout.slice(0, 200))) }
+    })
+  })
 }
 
-let _yt = null
-async function yt() {
-  if (!_yt) _yt = await Innertube.create()
-  return _yt
+function formatQuality(quality) {
+  switch (quality) {
+    case "2160p": return "best[height<=2160]"
+    case "1080p": return "best[height<=1080]"
+    default:      return "best[height<=1080]"
+  }
 }
 
 // ─── YouTube ──────────────────────────────────────────────────────────
 
-function pickBestFormat(formats, maxHeight) {
-  const combined = (formats || []).filter((f) => f.has_audio && f.has_video && f.height && f.height <= maxHeight)
-  combined.sort((a, b) => b.height - a.height)
-  return combined[0] || null
-}
-
 async function handleYouTube(url, quality) {
-  const id = vidId(url)
-  if (!id) throw new Error("Invalid YouTube URL")
-  const info = await (await yt()).getInfo(id)
-  const maxH = quality === "2160p" ? 2160 : 1080
-  const fmt = pickBestFormat(info.streaming_data?.formats, maxH)
-  if (!fmt) throw new Error(`No ${quality || "1080p"} format with audio found`)
+  const fmt = formatQuality(quality)
+  const output = await ytdlp([
+    "--dump-json", "--no-warnings", "--no-call-home",
+    "--prefer-free-formats", "--no-check-certificate",
+    "--format", fmt,
+    "--user-agent", shuffleAgent(),
+    url,
+  ])
+
+  const title = output.title || "YouTube Video"
+  const formats = output.requested_formats || []
+  const videoStream = formats.find((f) => f.vcodec !== "none") || output
 
   return {
-    title: info.basic_info.title || "YouTube Video",
+    title,
     source: "youtube",
-    qualityLabel: `${fmt.height}p`,
-    width: fmt.width || null,
-    height: fmt.height || null,
+    qualityLabel: videoStream?.height ? `${videoStream.height}p` : (quality || "1080p"),
+    width: videoStream?.width || null,
+    height: videoStream?.height || null,
     hasAudio: true,
   }
 }
@@ -157,31 +167,40 @@ app.post("/api/extract", async (req, res) => {
   }
 })
 
-// Stream YouTube video using youtubei.js
+// Stream YouTube video via yt-dlp
 app.get("/api/stream", async (req, res) => {
   const { url, quality, title } = req.query
   if (!url) return res.status(400).json({ error: "Missing url" })
 
-  const id = vidId(url)
-  if (!id) return res.status(400).json({ error: "Invalid YouTube URL" })
-
+  const fmt = formatQuality(quality)
   const fname = (title || "video").replace(/[^a-zA-Z0-9-_]/g, "_").slice(0, 50)
 
   res.setHeader("Content-Type", "video/mp4")
   res.setHeader("Content-Disposition", `attachment; filename="${fname}.mp4"`)
   res.setHeader("Accept-Ranges", "bytes")
 
-  try {
-    const info = await (await yt()).getInfo(id)
-    const maxH = quality === "2160p" ? 2160 : 1080
-    const fmt = pickBestFormat(info.streaming_data?.formats, maxH)
-    if (!fmt) throw new Error(`No ${quality || "1080p"} format with audio found`)
-    const resp = await axios({ url: fmt.url, responseType: "stream", timeout: 60000, headers: { "User-Agent": shuffleAgent() } })
-    resp.data.pipe(res)
-    req.on("close", () => { resp.data.destroy() })
-  } catch (err) {
+  const proc = execFile(BIN, [
+    "--no-warnings", "--no-call-home",
+    "--prefer-free-formats", "--no-check-certificate",
+    "--format", fmt,
+    "--user-agent", shuffleAgent(),
+    "-o", "-",
+    url,
+  ], { timeout: 60000 })
+
+  let stderr = ""
+  proc.stderr.on("data", (d) => { stderr += d })
+  proc.stdout.pipe(res)
+
+  proc.on("close", (code) => {
+    if (code !== 0 && !res.headersSent) {
+      res.status(500).json({ error: stderr || `yt-dlp exited ${code}` })
+    }
+  })
+  proc.on("error", (err) => {
     if (!res.headersSent) res.status(500).json({ error: err.message })
-  }
+  })
+  req.on("close", () => { proc.kill() })
 })
 
 // Proxy Pinterest videos through server

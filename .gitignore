@@ -4,6 +4,7 @@ ffmpeg_bin/
 ffmpeg.exe
 ffprobe.exe
 yt-dlp.exe
+bin/
 .env
 
 .vercel
