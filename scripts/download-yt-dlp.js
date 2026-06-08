@@ -1,4 +1,3 @@
-const https = require("https")
 const fs = require("fs")
 const path = require("path")
 const { execSync } = require("child_process")
@@ -18,23 +17,29 @@ if (fs.existsSync(DEST)) {
   process.exit(0)
 }
 
+if (!fs.existsSync(BIN_DIR)) fs.mkdirSync(BIN_DIR, { recursive: true })
+
 console.log("Downloading yt-dlp from", URL)
-const file = fs.createWriteStream(DEST)
-https.get(URL, (res) => {
-  if (res.statusCode === 302 || res.statusCode === 301) {
-    https.get(res.headers.location, (r) => r.pipe(file))
-  } else {
-    res.pipe(file)
-  }
-  file.on("finish", () => {
-    file.close()
-    if (!isWin) {
-      try { execSync(`chmod +x "${DEST}"`) } catch {}
-    }
-    console.log("yt-dlp downloaded to", DEST)
+
+// axios follows redirects automatically
+const axios = require("axios")
+
+async function main() {
+  const resp = await axios({ method: "GET", url: URL, responseType: "stream", timeout: 60000 })
+  const writer = fs.createWriteStream(DEST)
+  resp.data.pipe(writer)
+  await new Promise((resolve, reject) => {
+    writer.on("finish", resolve)
+    writer.on("error", reject)
   })
-}).on("error", (err) => {
-  fs.unlinkSync(DEST)
+  if (!isWin) {
+    try { execSync(`chmod +x "${DEST}"`) } catch {}
+  }
+  console.log("yt-dlp downloaded to", DEST)
+}
+
+main().catch((err) => {
   console.error("Download failed:", err.message)
+  if (fs.existsSync(DEST)) fs.unlinkSync(DEST)
   process.exit(1)
 })
