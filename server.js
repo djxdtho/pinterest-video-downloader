@@ -2,7 +2,7 @@ const express = require("express")
 const path = require("path")
 const axios = require("axios")
 const cheerio = require("cheerio")
-const ytdl = require("@distube/ytdl-core")
+const { Innertube } = require("youtubei.js")
 
 const app = express()
 const PORT = process.env.PORT || 3001
@@ -18,29 +18,31 @@ const AGENTS = [
 
 function shuffleAgent() { return AGENTS[Math.floor(Math.random() * AGENTS.length)] }
 
-function reqOpts() { return { headers: { "User-Agent": shuffleAgent() } } }
+function vidId(url) {
+  const m = url.match(/(?:v=|youtu\.be\/|shorts\/)([a-zA-Z0-9_-]{11})/)
+  return m ? m[1] : null
+}
 
-function pickFormat(formats, maxHeight) {
-  const filtered = formats.filter((f) => f.hasVideo && f.hasAudio && f.height && f.height <= maxHeight)
-  filtered.sort((a, b) => b.height - a.height)
-  return filtered[0] || null
+let _yt = null
+async function yt() {
+  if (!_yt) _yt = await Innertube.create({ retrieve_player: false })
+  return _yt
 }
 
 // ─── YouTube ──────────────────────────────────────────────────────────
 
 async function handleYouTube(url, quality) {
-  const maxH = quality === "2160p" ? 2160 : 1080
-  const info = await ytdl.getInfo(url, { requestOptions: reqOpts() })
-  const fmt = pickFormat(info.formats, maxH)
-
-  if (!fmt) throw new Error(`No ${quality || "1080p"} format with audio found`)
+  const id = vidId(url)
+  if (!id) throw new Error("Invalid YouTube URL")
+  const info = await (await yt()).getInfo(id)
+  const fmt = info.chooseFormat({ type: "videoandaudio", quality: quality === "2160p" ? "2160p" : "1080p" })
 
   return {
-    title: info.videoDetails?.title || "YouTube Video",
+    title: info.basic_info.title || "YouTube Video",
     source: "youtube",
-    qualityLabel: `${fmt.height}p`,
-    width: fmt.width || null,
-    height: fmt.height || null,
+    qualityLabel: `${fmt?.height || 0}p`,
+    width: fmt?.width || null,
+    height: fmt?.height || null,
     hasAudio: true,
   }
 }
@@ -147,12 +149,14 @@ app.post("/api/extract", async (req, res) => {
   }
 })
 
-// Stream YouTube video using ytdl-core
+// Stream YouTube video using youtubei.js
 app.get("/api/stream", async (req, res) => {
   const { url, quality, title } = req.query
   if (!url) return res.status(400).json({ error: "Missing url" })
 
-  const maxH = quality === "2160p" ? 2160 : 1080
+  const id = vidId(url)
+  if (!id) return res.status(400).json({ error: "Invalid YouTube URL" })
+
   const fname = (title || "video").replace(/[^a-zA-Z0-9-_]/g, "_").slice(0, 50)
 
   res.setHeader("Content-Type", "video/mp4")
@@ -160,13 +164,12 @@ app.get("/api/stream", async (req, res) => {
   res.setHeader("Accept-Ranges", "bytes")
 
   try {
-    const info = await ytdl.getInfo(url, { requestOptions: reqOpts() })
-    const fmt = pickFormat(info.formats, maxH)
-    if (!fmt) throw new Error(`No ${quality || "1080p"} format with audio found`)
-
-    const stream = ytdl(url, { requestOptions: reqOpts(), quality: fmt.itag })
+    const info = await (await yt()).getInfo(id)
+    const stream = await info.download({
+      type: "videoandaudio",
+      quality: quality === "2160p" ? "2160p" : "1080p",
+    })
     stream.pipe(res)
-
     req.on("close", () => { stream.destroy() })
   } catch (err) {
     if (!res.headersSent) res.status(500).json({ error: err.message })
