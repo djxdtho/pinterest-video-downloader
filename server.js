@@ -31,18 +31,26 @@ async function yt() {
 
 // ─── YouTube ──────────────────────────────────────────────────────────
 
+function pickBestFormat(formats, maxHeight) {
+  const combined = (formats || []).filter((f) => f.has_audio && f.has_video && f.height && f.height <= maxHeight)
+  combined.sort((a, b) => b.height - a.height)
+  return combined[0] || null
+}
+
 async function handleYouTube(url, quality) {
   const id = vidId(url)
   if (!id) throw new Error("Invalid YouTube URL")
   const info = await (await yt()).getInfo(id)
-  const fmt = info.chooseFormat({ type: "videoandaudio", quality: quality === "2160p" ? "2160p" : "1080p" })
+  const maxH = quality === "2160p" ? 2160 : 1080
+  const fmt = pickBestFormat(info.streaming_data?.formats, maxH)
+  if (!fmt) throw new Error(`No ${quality || "1080p"} format with audio found`)
 
   return {
     title: info.basic_info.title || "YouTube Video",
     source: "youtube",
-    qualityLabel: `${fmt?.height || 0}p`,
-    width: fmt?.width || null,
-    height: fmt?.height || null,
+    qualityLabel: `${fmt.height}p`,
+    width: fmt.width || null,
+    height: fmt.height || null,
     hasAudio: true,
   }
 }
@@ -165,12 +173,12 @@ app.get("/api/stream", async (req, res) => {
 
   try {
     const info = await (await yt()).getInfo(id)
-    const stream = await info.download({
-      type: "videoandaudio",
-      quality: quality === "2160p" ? "2160p" : "1080p",
-    })
-    stream.pipe(res)
-    req.on("close", () => { stream.destroy() })
+    const maxH = quality === "2160p" ? 2160 : 1080
+    const fmt = pickBestFormat(info.streaming_data?.formats, maxH)
+    if (!fmt) throw new Error(`No ${quality || "1080p"} format with audio found`)
+    const resp = await axios({ url: fmt.url, responseType: "stream", timeout: 60000, headers: { "User-Agent": shuffleAgent() } })
+    resp.data.pipe(res)
+    req.on("close", () => { resp.data.destroy() })
   } catch (err) {
     if (!res.headersSent) res.status(500).json({ error: err.message })
   }
