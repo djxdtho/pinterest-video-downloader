@@ -1,0 +1,7 @@
+node_modules/
+ffmpeg_build.zip
+ffmpeg_bin/
+ffmpeg.exe
+ffprobe.exe
+yt-dlp.exe
+.env

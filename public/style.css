@@ -1,0 +1,461 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background: #0a0a0a;
+  color: #f5f5f5;
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background-image:
+    radial-gradient(ellipse at 20% 50%, rgba(230, 0, 35, 0.06) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 50%, rgba(230, 0, 35, 0.04) 0%, transparent 60%);
+}
+
+.container {
+  width: 100%;
+  max-width: 560px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.card {
+  background: #111;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 20px;
+  padding: 32px;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+
+.logo h1 {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  color: #fff;
+}
+
+.badge {
+  font-size: 10px;
+  font-weight: 600;
+  color: rgba(230, 0, 35, 0.8);
+  background: rgba(230, 0, 35, 0.1);
+  padding: 2px 7px;
+  border-radius: 6px;
+  letter-spacing: 0.3px;
+}
+
+.subtitle {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.45);
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+/* ─── Source Tabs ────────────────────────────── */
+
+.source-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.source-tab {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(255, 255, 255, 0.03);
+  color: rgba(255, 255, 255, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.source-tab:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+}
+
+.source-tab.active {
+  background: rgba(230, 0, 35, 0.12);
+  border-color: rgba(230, 0, 35, 0.3);
+  color: #e60023;
+}
+
+/* ─── Input ──────────────────────────────────── */
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 0 12px;
+  transition: border-color 0.2s;
+}
+
+.input-wrapper:focus-within {
+  border-color: rgba(230, 0, 35, 0.5);
+}
+
+.input-icon {
+  flex-shrink: 0;
+  color: rgba(255, 255, 255, 0.25);
+}
+
+.input-wrapper input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #f5f5f5;
+  font-size: 14px;
+  padding: 14px 0;
+  font-family: inherit;
+}
+
+.input-wrapper input::placeholder {
+  color: rgba(255, 255, 255, 0.25);
+}
+
+.paste-btn {
+  flex-shrink: 0;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.35);
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s, background 0.2s;
+}
+
+.paste-btn:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* ─── Quality Picker ─────────────────────────── */
+
+.quality-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 2px 0;
+  animation: fadeUp 0.2s ease-out;
+}
+
+.quality-row.hidden {
+  display: none;
+}
+
+.quality-label {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.3);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.quality-options {
+  display: flex;
+  gap: 4px;
+}
+
+.quality-btn {
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+  position: relative;
+}
+
+.quality-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+.quality-btn.active {
+  background: rgba(230, 0, 35, 0.12);
+  border-color: rgba(230, 0, 35, 0.4);
+  color: #e60023;
+}
+
+/* ─── Download Button ────────────────────────── */
+
+.download-btn {
+  width: 100%;
+  background: #e60023;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 14px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background 0.2s, opacity 0.2s, transform 0.15s;
+  font-family: inherit;
+  position: relative;
+}
+
+.download-btn:hover:not(:disabled) {
+  background: #c5001e;
+}
+
+.download-btn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.download-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-text {
+  transition: opacity 0.2s;
+}
+
+.btn-spinner {
+  display: none;
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.download-btn.loading .btn-text {
+  opacity: 0;
+}
+
+.download-btn.loading .btn-spinner {
+  display: block;
+  position: absolute;
+}
+
+/* ─── Error ───────────────────────────────────── */
+
+.error-msg {
+  font-size: 13px;
+  color: #e60023;
+  min-height: 0;
+  overflow: hidden;
+  transition: min-height 0.2s, margin 0.2s;
+  line-height: 1.4;
+  padding: 4px 0;
+}
+
+.error-msg:empty {
+  margin: 0;
+  min-height: 0;
+}
+
+/* ─── Video Meta ──────────────────────────────── */
+
+.video-meta {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.meta-source,
+.meta-quality,
+.meta-resolution {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.meta-source {
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.meta-source.youtube { color: #ff4444; border-color: rgba(255, 68, 68, 0.25); background: rgba(255, 68, 68, 0.08); }
+.meta-source.pinterest { color: #e60023; border-color: rgba(230, 0, 35, 0.25); background: rgba(230, 0, 35, 0.08); }
+
+.meta-quality {
+  background: rgba(230, 0, 35, 0.1);
+  color: #e60023;
+  border: 1px solid rgba(230, 0, 35, 0.2);
+}
+
+.meta-resolution {
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* ─── Result ──────────────────────────────────── */
+
+.result {
+  margin-top: 20px;
+  animation: fadeUp 0.35s ease-out;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.result.hidden {
+  display: none;
+}
+
+.video-wrapper {
+  border-radius: 12px;
+  overflow: hidden;
+  background: #000;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.video-wrapper video {
+  width: 100%;
+  display: block;
+  max-height: 400px;
+}
+
+.result-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.video-title {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.5);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.result-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.save-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, transform 0.15s;
+  font-family: inherit;
+  white-space: nowrap;
+}
+
+.save-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.save-btn:active {
+  transform: scale(0.97);
+}
+
+.save-audio-btn {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.save-audio-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+/* ─── Placeholder ─────────────────────────────── */
+
+.placeholder {
+  margin-top: 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.2);
+}
+
+.placeholder-icon {
+  opacity: 0.3;
+}
+
+.placeholder p {
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.footer-text {
+  text-align: center;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.15);
+}
+
+/* ─── Responsive ──────────────────────────────── */
+
+@media (max-width: 480px) {
+  .card { padding: 24px 20px; border-radius: 16px; }
+  .result-footer { flex-direction: column; align-items: stretch; }
+  .result-actions { justify-content: stretch; }
+  .save-btn { flex: 1; justify-content: center; }
+  .video-title { white-space: normal; }
+  .source-tabs { overflow-x: auto; }
+  .source-tab { flex-shrink: 0; }
+}

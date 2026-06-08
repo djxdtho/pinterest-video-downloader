@@ -1,0 +1,15 @@
+{
+  "name": "pinterest-video-downloader",
+  "version": "1.0.0",
+  "description": "Download Pinterest videos by pasting a link",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@distube/ytdl-core": "^4.16.12",
+    "axios": "^1.7.0",
+    "cheerio": "^1.0.0",
+    "express": "^4.21.0"
+  }
+}
