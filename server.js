@@ -2,7 +2,7 @@ const express = require("express")
 const path = require("path")
 const axios = require("axios")
 const cheerio = require("cheerio")
-const youtubedl = require("youtube-dl-exec")
+const ytdl = require("@distube/ytdl-core")
 
 const app = express()
 const PORT = process.env.PORT || 3001
@@ -18,40 +18,29 @@ const AGENTS = [
 
 function shuffleAgent() { return AGENTS[Math.floor(Math.random() * AGENTS.length)] }
 
-// ─── yt-dlp helper (via youtube-dl-exec — no Python needed) ──────────
+function reqOpts() { return { headers: { "User-Agent": shuffleAgent() } } }
 
-function formatQuality(quality) {
-  switch (quality) {
-    case "2160p": return "best[height<=2160]"
-    case "1080p": return "best[height<=1080]"
-    default:      return "best[height<=1080]"
-  }
+function pickFormat(formats, maxHeight) {
+  const filtered = formats.filter((f) => f.hasVideo && f.hasAudio && f.height && f.height <= maxHeight)
+  filtered.sort((a, b) => b.height - a.height)
+  return filtered[0] || null
 }
 
 // ─── YouTube ──────────────────────────────────────────────────────────
 
 async function handleYouTube(url, quality) {
-  const fmt = formatQuality(quality)
-  const output = await youtubedl(url, {
-    dumpSingleJson: true,
-    noWarnings: true,
-    noCallHome: true,
-    preferFreeFormats: true,
-    noCheckCertificates: true,
-    format: fmt,
-    userAgent: shuffleAgent(),
-  })
+  const maxH = quality === "2160p" ? 2160 : 1080
+  const info = await ytdl.getInfo(url, { requestOptions: reqOpts() })
+  const fmt = pickFormat(info.formats, maxH)
 
-  const title = output.title || "YouTube Video"
-  const formats = output.requested_formats || []
-  const videoStream = formats.find((f) => f.vcodec !== "none") || output
+  if (!fmt) throw new Error(`No ${quality || "1080p"} format with audio found`)
 
   return {
-    title,
+    title: info.videoDetails?.title || "YouTube Video",
     source: "youtube",
-    qualityLabel: videoStream?.height ? `${videoStream.height}p` : (quality || "1080p"),
-    width: videoStream?.width || null,
-    height: videoStream?.height || null,
+    qualityLabel: `${fmt.height}p`,
+    width: fmt.width || null,
+    height: fmt.height || null,
     hasAudio: true,
   }
 }
@@ -158,47 +147,30 @@ app.post("/api/extract", async (req, res) => {
   }
 })
 
-// Stream YouTube video using youtube-dl-exec
+// Stream YouTube video using ytdl-core
 app.get("/api/stream", async (req, res) => {
   const { url, quality, title } = req.query
   if (!url) return res.status(400).json({ error: "Missing url" })
 
-  const fmt = formatQuality(quality)
+  const maxH = quality === "2160p" ? 2160 : 1080
   const fname = (title || "video").replace(/[^a-zA-Z0-9-_]/g, "_").slice(0, 50)
 
   res.setHeader("Content-Type", "video/mp4")
   res.setHeader("Content-Disposition", `attachment; filename="${fname}.mp4"`)
   res.setHeader("Accept-Ranges", "bytes")
 
-  const proc = youtubedl.exec(url, {
-    noWarnings: true,
-    noCallHome: true,
-    preferFreeFormats: true,
-    noCheckCertificates: true,
-    format: fmt,
-    mergeOutputFormat: "mp4",
-    userAgent: shuffleAgent(),
-    output: "-",
-  })
+  try {
+    const info = await ytdl.getInfo(url, { requestOptions: reqOpts() })
+    const fmt = pickFormat(info.formats, maxH)
+    if (!fmt) throw new Error(`No ${quality || "1080p"} format with audio found`)
 
-  let stderr = ""
-  proc.stderr.on("data", (d) => { stderr += d })
+    const stream = ytdl(url, { requestOptions: reqOpts(), quality: fmt.itag })
+    stream.pipe(res)
 
-  proc.stdout.pipe(res)
-
-  proc.on("close", (code) => {
-    if (code !== 0 && !res.headersSent) {
-      res.status(500).json({ error: stderr || `yt-dlp exited ${code}` })
-    }
-  })
-
-  proc.on("error", (err) => {
+    req.on("close", () => { stream.destroy() })
+  } catch (err) {
     if (!res.headersSent) res.status(500).json({ error: err.message })
-  })
-
-  req.on("close", () => {
-    proc.kill()
-  })
+  }
 })
 
 // Proxy Pinterest videos through server

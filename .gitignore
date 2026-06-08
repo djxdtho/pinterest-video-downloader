@@ -5,3 +5,5 @@ ffmpeg.exe
 ffprobe.exe
 yt-dlp.exe
 .env
+
+.vercel
